@@ -1,13 +1,14 @@
 from sly import Lexer, Parser
 
 class MPLLexer(Lexer):
-    tokens = {TALK, ANIMAL}
+    tokens = {MIX, NAME, INTEGER}
     ignore = ' \t'
-    literals = {':'}
+    literals = {':', '(', ')', ','}
     #DISPLAY = r"DISPLAY"
-    TALK = r'talk'
+    MIX = r'mix'
+    INTEGER = r'\d+'
     # Tokens
-    ANIMAL = r'[a-zA-Z_][a-zA-Z0-9_]*'
+    NAME = r'[a-zA-Z_][a-zA-Z0-9_]*'
     @_(r'\n+')
     def newline(self, t):
         self.lineno += t.value.count('\n')
@@ -17,10 +18,18 @@ class MPLLexer(Lexer):
 
 class MPLParser(Parser):
     tokens = MPLLexer.tokens
+    precedence = (
+        ("")
+    )
     #print(tokens)
     def __init__(self):
         pass
-    @_('TALK ":" ANIMAL')
+
+    @_('"(" expr "," expr "," expr ")"')
+    def value(self, p):
+        return ( p.expr0, p.expr1, p.expr2 )
+
+    @_('MIX ":" COLOR')
     def value(self, p):
         #print(p[2])
         # Mix of the paints.
