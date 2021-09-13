@@ -1,19 +1,23 @@
 from sly import Lexer, Parser
 
 class MPLLexer(Lexer):
-    tokens = {TALK, ANIMAL}
+    tokens = {Mix , Color}
     ignore = ' \t'
     literals = {':'}
     #DISPLAY = r"DISPLAY"
-    TALK = r'talk'
+    Mix = r'Mix'
     # Tokens
-    ANIMAL = r'[a-zA-Z_][a-zA-Z0-9_]*'
+    Color = r'[a-zA-Z_][a-zA-Z0-9_]*'
     @_(r'\n+')
     def newline(self, t):
         self.lineno += t.value.count('\n')
     def error(self, t):
         print("Illegal character '%s'" % t.value[0])
         self.index += 1
+    @_(r'\d+')
+    def INTEGER(self,t):
+        t.value = int(t.value)
+        return t 
 
 class MPLParser(Parser):
     tokens = MPLLexer.tokens
