@@ -6,7 +6,6 @@ class MPLLexer(Lexer):
     literals = {':', '(', ')', ','}
     #DISPLAY = r"DISPLAY"
     MIX = r'mix'
-    INTEGER = r'\d+'
     # Tokens
     NAME = r'[a-zA-Z_][a-zA-Z0-9_]*'
     @_(r'\n+')
