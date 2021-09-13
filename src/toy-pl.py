@@ -1,30 +1,35 @@
 from sly import Lexer, Parser
 
 class MPLLexer(Lexer):
-    tokens = {Mix , Color}
+    tokens = {MIX, NAME, INTEGER}
     ignore = ' \t'
-    literals = {':'}
+    literals = {':', '(', ')', ','}
     #DISPLAY = r"DISPLAY"
-    Mix = r'Mix'
+    MIX = r'mix'
+    INTEGER = r'\d+'
     # Tokens
-    Color = r'[a-zA-Z_][a-zA-Z0-9_]*'
+    NAME = r'[a-zA-Z_][a-zA-Z0-9_]*'
     @_(r'\n+')
     def newline(self, t):
         self.lineno += t.value.count('\n')
     def error(self, t):
         print("Illegal character '%s'" % t.value[0])
         self.index += 1
-    @_(r'\d+')
-    def INTEGER(self,t):
-        t.value = int(t.value)
-        return t 
 
 class MPLParser(Parser):
     tokens = MPLLexer.tokens
+    precedence = (
+        ("")
+    )
     #print(tokens)
     def __init__(self):
         pass
-    @_('TALK ":" ANIMAL')
+
+    @_('"(" expr "," expr "," expr ")"')
+    def value(self, p):
+        return ( p.expr0, p.expr1, p.expr2 )
+
+    @_('MIX ":" COLOR')
     def value(self, p):
         #print(p[2])
         # Mix of the paints.
