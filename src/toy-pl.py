@@ -14,7 +14,10 @@ class MPLLexer(Lexer):
     def error(self, t):
         print("Illegal character '%s'" % t.value[0])
         self.index += 1
-
+    @_(r'\d+')
+    def INTEGER(self, t):
+        t.value = int(t.value)
+        return t
 class MPLParser(Parser):
     tokens = MPLLexer.tokens
     precedence = (
