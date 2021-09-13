@@ -1,4 +1,5 @@
 from sly import Lexer, Parser
+
 class MPLLexer(Lexer):
     tokens = {TALK, ANIMAL}
     ignore = ' \t'
@@ -13,6 +14,7 @@ class MPLLexer(Lexer):
     def error(self, t):
         print("Illegal character '%s'" % t.value[0])
         self.index += 1
+
 class MPLParser(Parser):
     tokens = MPLLexer.tokens
     #print(tokens)
@@ -21,11 +23,12 @@ class MPLParser(Parser):
     @_('TALK ":" ANIMAL')
     def value(self, p):
         #print(p[2])
-        # Mix of the paints.    
+        # Mix of the paints.
         if (p[2] == "cat"):
             print("Meow")
         elif (p[2] == "horse"):
             print("Neigh")
+
 if __name__ == '__main__':
     lexer = MPLLexer()
     parser = MPLParser()
