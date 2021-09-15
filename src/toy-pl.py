@@ -1,13 +1,12 @@
+# https://sly.readthedocs.io/en/latest/sly.html
+
 from sly import Lexer, Parser
 
 class MPLLexer(Lexer):
-    tokens = {MIX, NAME, INTEGER}
+    # Choose things to ignore
     ignore = ' \t'
-    literals = {':', '(', ')', ','}
-    #DISPLAY = r"DISPLAY"
-    MIX = r'mix'
-    # Tokens
-    NAME = r'[a-zA-Z_][a-zA-Z0-9_]*'
+    ignore_comment = r'\#.*'
+
     @_(r'\n+')
     def newline(self, t):
         self.lineno += t.value.count('\n')
@@ -15,34 +14,64 @@ class MPLLexer(Lexer):
         print("Illegal character '%s'" % t.value[0])
         self.index += 1
 
+    literals = {':', '(', ')', ',', '='}
+
+    # Tokens
+    tokens = {
+        MIX,
+        NAME,
+        EQUALS,
+        INTEGER,
+        STRING
+    }
+
+    MIX = r'mix'
+    NAME = r'[a-zA-Z_][a-zA-Z0-9_]*'
+    EQUALS = r'==''
     @_(r'\d+')
     def INTEGER(self, t):
         t.value = int(t.value)
         return t
+    STRING = r'\"[^"]\"'
 
 class MPLParser(Parser):
     tokens = MPLLexer.tokens
-    #print(tokens)
     def __init__(self):
-        pass
+        self.names = {}
 
-    @_('"(" expr "," expr "," expr ")"')
-    def value(self, p):
+    @_('NAME "=" expr')
+    def statement(self, p):
+        self.names[p.NAME] = p.expr
+
+    @_('NAME')
+    def expr(self, p):
+        try:
+            return self.names[p.NAME]
+        except LookupError:
+            print(f"Undefined name {p.NAME}")
+            return 0
+
+    @_('expr')
+    def statement(self, p):
+        print(p.expr)
+
+    @_('"(" INTEGER "," INTEGER "," INTEGER ")"')
+    def color(self, p):
+        # (R, G, B)
         return ( p.expr0, p.expr1, p.expr2 )
 
-    @_('MIX ":" COLOR')
-    def value(self, p):
-        #print(p[2])
-        # Mix of the paints.
-        if (p[2] == "cat"):
-            print("Meow")
-        elif (p[2] == "horse"):
-            print("Neigh")
+    @_('MIX ":" color color')
+    def color(self, p):
+        # Mix of the colors.
+        return (
+            int(0.5 * (p[2][0] p[3][0])),
+            int(0.5 * (p[2][1] p[3][1])),
+            int(0.5 * (p[2][2] p[3][2]))
+        )
 
 if __name__ == '__main__':
     lexer = MPLLexer()
     parser = MPLParser()
-    #parser.parse(lexer.tokenize("talk : cat"))
     while True:
         try:
             text = input('Enter colors to mix > ')
