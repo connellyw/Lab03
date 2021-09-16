@@ -1,6 +1,11 @@
 # https://sly.readthedocs.io/en/latest/sly.html
+# https://rich.readthedocs.io/en/stable/reference/color.html
 
 from sly import Lexer, Parser
+from rich.console import Console
+from rich.color import Color
+
+console = Console()
 
 class MPLLexer(Lexer):
     # Choose things to ignore
@@ -27,7 +32,7 @@ class MPLLexer(Lexer):
 
     MIX = r'mix'
     NAME = r'[a-zA-Z_][a-zA-Z0-9_]*'
-    EQUALS = r'==''
+    EQUALS = r'=='
     @_(r'\d+')
     def INTEGER(self, t):
         t.value = int(t.value)
@@ -48,25 +53,35 @@ class MPLParser(Parser):
         try:
             return self.names[p.NAME]
         except LookupError:
-            print(f"Undefined name {p.NAME}")
+            console.print(f"Undefined name {p.NAME}")
             return 0
 
     @_('expr')
     def statement(self, p):
-        print(p.expr)
+        console.print(p.expr)
 
     @_('"(" INTEGER "," INTEGER "," INTEGER ")"')
     def color(self, p):
         # (R, G, B)
-        return ( p.expr0, p.expr1, p.expr2 )
+        return ( p.INTEGER0, p.INTEGER1, p.INTEGER2 )
 
     @_('MIX ":" color color')
     def color(self, p):
         # Mix of the colors.
         return (
-            int(0.5 * (p[2][0] p[3][0])),
-            int(0.5 * (p[2][1] p[3][1])),
-            int(0.5 * (p[2][2] p[3][2]))
+            int(0.5 * (p[2][0] + p[3][0])),
+            int(0.5 * (p[2][1] + p[3][1])),
+            int(0.5 * (p[2][2] + p[3][2]))
+        )
+
+    @_('color')
+    def statement(self, p):
+        console.print(
+            Color.from_rgb(
+                p[0],
+                p[1],
+                p[2]
+            )
         )
 
 if __name__ == '__main__':
